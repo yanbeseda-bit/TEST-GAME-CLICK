@@ -2,294 +2,273 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Ultimate Clicker: Black Matter Evolution</title>
+    <title>Ultimate Clicker: God Mode</title>
     <style>
-        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; }
-        #game-container { display: flex; gap: 15px; padding: 20px; width: 98vw; max-width: 1400px; justify-content: center; }
-        .panel { background: #161616; border: 1px solid #333; border-radius: 12px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); min-width: 280px; }
+        body { background: #050505; color: #e0e0e0; font-family: 'Verdana', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; user-select: none; }
+        #game-container { display: flex; gap: 20px; padding: 20px; width: 95vw; max-width: 1500px; }
+        .panel { background: #111; border: 1px solid #222; border-radius: 15px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.8); flex: 1; min-height: 600px; transition: 0.3s; }
+        .panel:hover { border-color: #444; }
+        
+        /* Заголовки */
+        h3 { color: #888; text-transform: uppercase; letter-spacing: 2px; font-size: 14px; border-bottom: 1px solid #222; padding-bottom: 10px; margin-top: 0; }
         
         /* Клик-зона */
-        #click-section { text-align: center; flex: 1; border-color: #444; }
-        #main-btn { width: 180px; height: 180px; border-radius: 50%; border: 4px solid #333; background: radial-gradient(circle, #222, #000); color: white; font-size: 22px; cursor: pointer; transition: 0.1s; position: relative; outline: none; }
-        #main-btn:active { transform: scale(0.92); border-color: #555; }
+        #main-btn { width: 220px; height: 220px; border-radius: 50%; border: 8px solid #1a1a1a; background: radial-gradient(circle, #333 0%, #000 100%); color: white; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.1s; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        #main-btn:active { transform: scale(0.9); box-shadow: 0 0 50px #444; }
         
-        /* Валюты */
-        .stat-val { font-weight: bold; font-size: 1.1em; }
-        .money { color: #ffd700; }
-        .extra { color: #00f2ff; }
+        /* Ресурсы */
+        .stat-box { margin-bottom: 20px; }
+        .val { font-size: 24px; font-weight: bold; display: block; }
+        .gold { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .crys { color: #00f2ff; text-shadow: 0 0 10px rgba(0,242,255,0.3); }
         .rp { color: #ff4d4d; }
-        .dm { color: #bc13fe; text-shadow: 0 0 10px #bc13fe; }
-        
+        .dm { color: #bc13fe; }
+
         /* Прогресс-бары */
-        .bar-container { background: #222; width: 100%; height: 12px; border-radius: 6px; margin: 10px 0; overflow: hidden; }
-        #exp-fill { background: linear-gradient(90deg, #4caf50, #8bc34a); width: 0%; height: 100%; transition: 0.3s; }
-        
-        /* Кнопки улучшений */
-        .upgrade-btn { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; margin: 5px 0; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px; }
-        .upgrade-btn:hover:not(:disabled) { background: #333; border-color: #666; }
-        .upgrade-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        
-        /* Деревья навыков */
-        .tree-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .tree-node { padding: 8px; font-size: 11px; border: 2px solid #333; border-radius: 6px; background: #111; cursor: pointer; }
-        .tree-node.owned { border-color: #ff4d4d; background: #2a1010; }
-        .tree-node.dm-owned { border-color: #bc13fe; background: #1a0525; }
-        
+        .bar { background: #1a1a1a; height: 10px; border-radius: 5px; margin-top: 5px; overflow: hidden; border: 1px solid #333; }
+        #exp-fill { background: linear-gradient(90deg, #00ff00, #55ff55); width: 0%; height: 100%; transition: 0.2s; }
+
+        /* Кнопки */
+        .btn { width: 100%; background: #1a1a1a; border: 1px solid #333; color: #ccc; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; font-size: 13px; transition: 0.2s; text-align: left; }
+        .btn:hover:not(:disabled) { background: #252525; border-color: #555; color: #fff; }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .rebirth-btn { border-color: #ff4d4d; color: #ff4d4d; font-weight: bold; text-align: center; font-size: 16px; }
+
+        /* Сетка древа */
+        .tree-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .node { padding: 10px; font-size: 11px; border: 2px solid #222; border-radius: 8px; background: #0a0a0a; cursor: pointer; opacity: 0.6; transition: 0.3s; }
+        .node.available { opacity: 1; border-color: #444; }
+        .node.bought { border-color: #ff4d4d; background: #200; opacity: 1; box-shadow: 0 0 10px rgba(255,0,0,0.2); }
+        .node.dm-bought { border-color: #bc13fe; background: #1a0525; opacity: 1; }
+
         /* Анимация клика */
-        .floating-text { position: absolute; pointer-events: none; animation: float 0.7s ease-out forwards; font-weight: bold; z-index: 1000; }
-        @keyframes float { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
-        
-        h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 5px; color: #bbb; }
-        hr { border: 0; border-top: 1px solid #333; margin: 15px 0; }
+        .pop { position: absolute; pointer-events: none; animation: popUp 0.6s ease-out forwards; font-weight: bold; font-size: 20px; z-index: 100; }
+        @keyframes popUp { 0% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, -100px); opacity: 0; } }
     </style>
 </head>
 <body>
 
-<h2 style="margin: 15px 0 5px 0;">Ultimate Clicker <span class="dm">Evolution</span></h2>
+<h1 style="margin: 20px 0;">ULTIMATE CLICKER <span style="color: #ff4d4d;">X</span></h1>
 
 <div id="game-container">
     <div class="panel">
-        <h3>Уровень и Ребирты</h3>
-        <div id="lvl-display">Уровень: <span class="stat-val">1</span></div>
-        <div class="bar-container"><div id="exp-fill"></div></div>
-        <div style="font-size: 12px; color: #888; margin-bottom: 15px;">Бонус уровня: <span id="lvl-bonus">+0%</span></div>
+        <h3>Прогресс Героя</h3>
+        <div class="stat-box">
+            <span>Уровень: <b id="lvl">1</b></span>
+            <div class="bar"><div id="exp-fill"></div></div>
+            <small style="color: #666">Бонус клика: <span id="lvl-bonus">0</span>%</small>
+        </div>
         
-        <button class="upgrade-btn" id="rebirth-action" style="text-align: center; border-color: #ff4d4d;">
-            <b>СДЕЛАТЬ РЕБИРТ</b><br>
-            Цена: <span id="reb-cost">1,000</span><br>
-            Даст: <span class="rp" id="reb-gain">+1 RP</span>
-        </button>
-        <p>Ребирты: <span class="stat-val" id="reb-count">0</span>/50</p>
-        <p>Очки Ребирта (RP): <span class="rp stat-val" id="rp-display">0</span></p>
-    </div>
-
-    <div class="panel" id="click-section">
-        <div class="stat-val money" id="money-display">0</div>
-        <div style="font-size: 14px; color: #aaa;">Золото</div>
-        <div class="stat-val extra" id="extra-display" style="margin-top:10px">0</div>
-        <div style="font-size: 12px; color: #888;">Синие Кристаллы</div>
-        
-        <div id="dm-area" style="display:none; margin-top:15px; border-top: 1px solid #bc13fe; padding-top:10px;">
-            <div class="stat-val dm" id="dm-display">0</div>
-            <div style="font-size: 12px; color: #bc13fe;">Черная Материя</div>
+        <div class="stat-box">
+            <button class="btn rebirth-btn" id="reb-btn">
+                РЕБИРТ<br>
+                <small>Цена: <span id="reb-cost">1000</span> Золота</small>
+            </button>
+            <p>Всего ребиртов: <b id="reb-cnt">0</b></p>
+            <p>Очки (RP): <b class="rp" id="rp-cnt">0</b></p>
         </div>
 
-        <div style="margin: 30px 0;">
+        <hr style="border: 0; border-top: 1px solid #222;">
+        <h3>Автоматизация</h3>
+        <div id="auto-stats" style="font-size: 12px; color: #888;">
+            Доход в сек: <span id="income">0</span> з/с
+        </div>
+    </div>
+
+    <div class="panel" style="text-align: center; flex: 1.5; background: #000;">
+        <div class="stat-box">
+            <span class="val gold" id="gold-val">0</span>
+            <small>ЗОЛОТО</small>
+        </div>
+        <div class="stat-box">
+            <span class="val crys" id="crys-val">0</span>
+            <small>СИНИЕ КРИСТАЛЛЫ</small>
+        </div>
+
+        <div style="margin: 40px 0; position: relative;" id="click-zone">
             <button id="main-btn">КЛИК</button>
         </div>
-        
-        <div style="font-size: 13px; color: #666;" id="power-info">Клик: 1 | Шанс доп: 5%</div>
+
+        <div id="dm-panel" style="display: none; border: 1px solid #bc13fe; padding: 10px; border-radius: 10px;">
+            <span class="val dm" id="dm-val">0</span>
+            <small>ЧЕРНАЯ МАТЕРИЯ</small>
+        </div>
     </div>
 
-    <div class="panel" style="flex: 1.2;">
-        <h3>Улучшения и Древо</h3>
-        <div class="tree-grid" id="upgrades-list">
-            <button class="upgrade-btn" onclick="buy('cp')">Сила Клика<br>Цена: <span id="cost-cp">10</span></button>
-            <button class="upgrade-btn" onclick="buy('ec')">Шанс Доп.<br>Цена: <span id="cost-ec">50</span></button>
-        </div>
-        
-        <hr>
-        <h3 class="rp">Древо Ребирта</h3>
-        <div class="tree-grid" id="rebirth-tree"></div>
+    <div class="panel">
+        <h3>Улучшения Клика</h3>
+        <button class="btn" onclick="buyUp('cp')">Сила Клика (Lvl <span id="l-cp">0</span>)<br>Цена: <span id="c-cp">10</span></button>
+        <button class="btn" onclick="buyUp('ec')">Шанс Кристалла (Lvl <span id="l-ec">0</span>)<br>Цена: <span id="c-ec">50</span></button>
+        <button class="btn" onclick="buyUp('crit')">Крит. Урон (x2) (Lvl <span id="l-crit">0</span>)<br>Цена: <span id="c-crit">500</span></button>
 
-        <div id="dm-tree-section" style="display:none">
-            <hr>
-            <h3 class="dm">Древо Материи</h3>
+        <hr style="border: 0; border-top: 1px solid #222; margin: 20px 0;">
+        <h3>Древо Ребирта (RP)</h3>
+        <div class="tree-grid" id="rp-tree"></div>
+
+        <div id="dm-tree-box" style="display: none;">
+            <hr style="border: 0; border-top: 1px solid #bc13fe; margin: 20px 0;">
+            <h3 class="dm">Древо Материи (DM)</h3>
             <div class="tree-grid" id="dm-tree"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- ДАННЫЕ ИГРЫ ---
-    let state = {
-        money: 0, extra: 0, dm: 0,
-        level: 1, exp: 0, expNext: 100,
-        rebirths: 0, rp: 0, rebCost: 1000,
-        
-        upgrades: { cp: 0, ec: 0 },
-        ownedNodes: [],
-        
-        // Сила
-        cpBase: 1,
-        ecBase: 0.05,
-        exMult: 1,
-        expMult: 1
+    let s = {
+        g: 0, c: 0, dm: 0,
+        lvl: 1, exp: 0, expN: 100,
+        rb: 0, rp: 0, rbC: 1000,
+        up: { cp: 0, ec: 0, crit: 0 },
+        nodes: []
     };
 
-    const RP_TREE = {
-        'auto1': { n: "Автоклик", d: "1 клик/сек", c: 1, r: 1 },
-        'exp1': { n: "Мудрость", d: "Опыт x2", c: 3, r: 2 },
-        'gold1': { n: "Богатство", d: "Золото x5", c: 10, r: 4 },
-        'dm_unlock': { n: "Тьма", d: "Черная Материя", c: 25, r: 8 }
+    const RP_DATA = {
+        'a1': { n: "Дроны", d: "10 з/с", c: 1, r: 1 },
+        'e1': { n: "Обучение", d: "Exp x2", c: 3, r: 2 },
+        'c1': { n: "Магнит", d: "Кристаллы x3", c: 8, r: 3 },
+        'g1': { n: "Золотая жила", d: "Клик x5", c: 15, r: 5 },
+        'dark': { n: "ТЬМА", d: "Открыть DM", c: 30, r: 8 }
     };
 
-    const DM_TREE = {
-        'dm_click': { n: "Сингулярность", d: "Клик x100", c: 5 },
-        'dm_auto': { n: "Разлом", d: "Авто-Золото x10", c: 15 },
-        'dm_exp': { n: "Вечность", d: "Уровни не сброс.", c: 50 }
+    const DM_DATA = {
+        'dm1': { n: "Бог Клика", d: "Клик x100", c: 10 },
+        'dm2': { n: "Бесконечность", d: "Авто x50", c: 25 },
+        'dm3': { n: "Вне Времени", d: "Lvl не сброс.", c: 100 }
     };
 
-    // --- ЛОГИКА КЛИКА ---
-    const btn = document.getElementById('main-btn');
-    btn.onclick = (e) => {
-        let lvlBonus = 1 + (state.level * 0.03);
-        let mult = 1;
-        if(state.ownedNodes.includes('gold1')) mult *= 5;
-        if(state.ownedNodes.includes('dm_click')) mult *= 100;
+    const mainBtn = document.getElementById('main-btn');
+    
+    mainBtn.onclick = (e) => {
+        // Логика силы
+        let p = (1 + s.up.cp * 2) * (1 + s.lvl * 0.05) * (1 + s.rb);
+        if(s.nodes.includes('g1')) p *= 5;
+        if(s.nodes.includes('dm1')) p *= 100;
 
-        let power = (state.cpBase + state.upgrades.cp * 2) * lvlBonus * mult * (1 + state.rebirths);
-        
-        state.money += power;
-        
-        // Доп валюта
-        let chance = state.ecBase + (state.upgrades.ec * 0.01);
-        let gotExtra = Math.random() < chance;
-        let extraVal = 0;
-        if(gotExtra) {
-            extraVal = Math.floor(power * 0.5);
-            state.extra += extraVal;
+        // Крит
+        let isCrit = Math.random() < (s.up.crit * 0.05);
+        if(isCrit) p *= 2;
+
+        s.g += p;
+
+        // Кристаллы
+        let eChance = 0.05 + (s.up.ec * 0.01);
+        let gotC = Math.random() < eChance;
+        let cVal = 0;
+        if(gotC) {
+            cVal = Math.floor(p * 0.2);
+            if(s.nodes.includes('c1')) cVal *= 3;
+            s.c += cVal;
         }
 
-        // Черная материя
+        // Материя
         let gotDM = false;
-        if(state.ownedNodes.includes('dm_unlock') && Math.random() < 0.02) {
-            state.dm += 1;
+        if(s.nodes.includes('dark') && Math.random() < 0.01) {
+            s.dm++;
             gotDM = true;
         }
 
         // Опыт
-        state.exp += 5 * state.expMult;
-        if(state.ownedNodes.includes('exp1')) state.exp += 5;
-        checkLevel();
+        let ex = 10;
+        if(s.nodes.includes('e1')) ex *= 2;
+        s.exp += ex;
+        if(s.exp >= s.expN) { s.lvl++; s.exp = 0; s.expN *= 1.3; }
 
-        showPop(e.clientX, e.clientY, `+${Math.floor(power)}`, gotExtra ? `+${extraVal} ✨` : "", gotDM);
+        showPop(e.clientX, e.clientY, p, cVal, isCrit, gotDM);
         update();
     };
 
-    function checkLevel() {
-        if(state.exp >= state.expNext) {
-            state.exp = 0;
-            state.level++;
-            state.expNext *= 1.25;
-        }
-    }
-
-    // --- МАГАЗИН ---
-    function buy(type) {
-        let cost = type === 'cp' ? 10 * Math.pow(1.5, state.upgrades.cp) : 50 * Math.pow(1.7, state.upgrades.ec);
-        if(state.money >= cost) {
-            state.money -= cost;
-            state.upgrades[type]++;
+    function buyUp(id) {
+        let costs = { cp: 10 * 1.5**s.up.cp, ec: 50 * 1.8**s.up.ec, crit: 500 * 2.2**s.up.crit };
+        if(s.g >= costs[id]) {
+            s.g -= costs[id];
+            s.up[id]++;
             update();
         }
     }
 
-    // --- РЕБИРТ ---
-    document.getElementById('rebirth-action').onclick = () => {
-        if(state.money >= state.rebCost && state.rebirths < 50) {
-            state.money = 0;
-            state.extra = 0;
-            state.upgrades = { cp: 0, ec: 0 };
-            
-            // Если нет DM апгрейда на сохранение уровня
-            if(!state.ownedNodes.includes('dm_exp')) {
-                state.level = 1;
-                state.exp = 0;
-                state.expNext = 100;
-            }
-
-            state.rebirths++;
-            state.rp += state.rebirths * 2;
-            state.rebCost *= 15; // Твое условие: рост в 15 раз
-            
+    document.getElementById('reb-btn').onclick = () => {
+        if(s.g >= s.rbC) {
+            s.rb++;
+            s.rp += s.rb * 3;
+            s.g = 0; s.c = 0;
+            s.up = { cp: 0, ec: 0, crit: 0 };
+            if(!s.nodes.includes('dm3')) { s.lvl = 1; s.exp = 0; s.expN = 100; }
+            s.rbC *= 15;
             update();
             renderTrees();
         }
     };
 
-    // --- ОТРИСОВКА ---
     function update() {
-        document.getElementById('money-display').innerText = Math.floor(state.money).toLocaleString();
-        document.getElementById('extra-display').innerText = Math.floor(state.extra).toLocaleString();
-        document.getElementById('dm-display').innerText = state.dm;
-        document.getElementById('rp-display').innerText = state.rp;
-        document.getElementById('reb-count').innerText = state.rebirths;
-        document.getElementById('reb-cost').innerText = Math.floor(state.rebCost).toLocaleString();
-        document.getElementById('reb-gain').innerText = `+${state.rebirths * 2} RP`;
+        document.getElementById('gold-val').innerText = Math.floor(s.g).toLocaleString();
+        document.getElementById('crys-val').innerText = Math.floor(s.c).toLocaleString();
+        document.getElementById('dm-val').innerText = s.dm;
+        document.getElementById('lvl').innerText = s.lvl;
+        document.getElementById('lvl-bonus').innerText = Math.floor(s.lvl * 5);
+        document.getElementById('exp-fill').style.width = (s.exp/s.expN*100) + "%";
+        document.getElementById('reb-cnt').innerText = s.rb;
+        document.getElementById('rp-cnt').innerText = s.rp;
+        document.getElementById('reb-cost').innerText = Math.floor(s.rbC).toLocaleString();
         
-        document.getElementById('lvl-display').innerHTML = `Уровень: <span class="stat-val">${state.level}</span>`;
-        document.getElementById('lvl-bonus').innerText = `+${Math.floor(state.level * 3)}% к силе`;
-        document.getElementById('exp-fill').style.width = (state.exp / state.expNext * 100) + "%";
+        document.getElementById('l-cp').innerText = s.up.cp;
+        document.getElementById('c-cp').innerText = Math.floor(10 * 1.5**s.up.cp).toLocaleString();
+        document.getElementById('l-ec').innerText = s.up.ec;
+        document.getElementById('c-ec').innerText = Math.floor(50 * 1.8**s.up.ec).toLocaleString();
+        document.getElementById('l-crit').innerText = s.up.crit;
+        document.getElementById('c-crit').innerText = Math.floor(500 * 2.2**s.up.crit).toLocaleString();
 
-        document.getElementById('cost-cp').innerText = Math.floor(10 * Math.pow(1.5, state.upgrades.cp)).toLocaleString();
-        document.getElementById('cost-ec').innerText = Math.floor(50 * Math.pow(1.7, state.upgrades.ec)).toLocaleString();
-        
-        document.getElementById('power-info').innerText = `Клик: ${Math.floor((state.cpBase + state.upgrades.cp * 2) * (1 + state.level * 0.03))} | Шанс доп: ${Math.floor((state.ecBase + state.upgrades.ec * 0.01)*100)}%`;
+        document.getElementById('reb-btn').disabled = s.g < s.rbC;
 
-        document.getElementById('rebirth-action').disabled = state.money < state.rebCost;
-        
-        if(state.ownedNodes.includes('dm_unlock')) {
-            document.getElementById('dm-area').style.display = 'block';
-            document.getElementById('dm-tree-section').style.display = 'block';
+        if(s.nodes.includes('dark')) {
+            document.getElementById('dm-panel').style.display = 'block';
+            document.getElementById('dm-tree-box').style.display = 'block';
         }
+
+        let inc = 0;
+        if(s.nodes.includes('a1')) inc = 10 * (s.nodes.includes('dm2') ? 50 : 1);
+        document.getElementById('income').innerText = inc;
     }
 
     function renderTrees() {
-        // Ребирт дерево
-        const rt = document.getElementById('rebirth-tree');
+        const rt = document.getElementById('rp-tree');
         rt.innerHTML = '';
-        for(let id in RP_TREE) {
-            let n = RP_TREE[id];
-            let div = document.createElement('div');
-            div.className = `tree-node ${state.ownedNodes.includes(id) ? 'owned' : ''}`;
-            div.innerHTML = `<b>${n.n}</b><br>${n.d}<br>Цена: ${n.c} RP<br><small>Ребирт: ${n.r}</small>`;
-            div.onclick = () => {
-                if(!state.ownedNodes.includes(id) && state.rp >= n.c && state.rebirths >= n.r) {
-                    state.rp -= n.c;
-                    state.ownedNodes.push(id);
-                    renderTrees();
-                    update();
-                }
-            };
-            rt.appendChild(div);
+        for(let id in RP_DATA) {
+            let n = RP_DATA[id];
+            let d = document.createElement('div');
+            let isAvail = s.rp >= n.c && s.rb >= n.r && !s.nodes.includes(id);
+            d.className = `node ${s.nodes.includes(id) ? 'bought' : (isAvail ? 'available' : '')}`;
+            d.innerHTML = `<b>${n.n}</b><br>${n.d}<br>${n.c} RP`;
+            d.onclick = () => { if(isAvail) { s.rp -= n.c; s.nodes.push(id); renderTrees(); update(); } };
+            rt.appendChild(d);
         }
 
-        // Дерево материи
         const dt = document.getElementById('dm-tree');
         dt.innerHTML = '';
-        for(let id in DM_TREE) {
-            let n = DM_TREE[id];
-            let div = document.createElement('div');
-            div.className = `tree-node ${state.ownedNodes.includes(id) ? 'dm-owned' : ''}`;
-            div.innerHTML = `<b>${n.n}</b><br>${n.d}<br>Цена: ${n.c} DM`;
-            div.onclick = () => {
-                if(!state.ownedNodes.includes(id) && state.dm >= n.c) {
-                    state.dm -= n.c;
-                    state.ownedNodes.push(id);
-                    renderTrees();
-                    update();
-                }
-            };
-            dt.appendChild(div);
+        for(let id in DM_DATA) {
+            let n = DM_DATA[id];
+            let d = document.createElement('div');
+            let isAvail = s.dm >= n.c && !s.nodes.includes(id);
+            d.className = `node ${s.nodes.includes(id) ? 'dm-bought' : (isAvail ? 'available' : '')}`;
+            d.innerHTML = `<b>${n.n}</b><br>${n.d}<br>${n.c} DM`;
+            d.onclick = () => { if(isAvail) { s.dm -= n.c; s.nodes.push(id); renderTrees(); update(); } };
+            dt.appendChild(d);
         }
     }
 
-    function showPop(x, y, txt, extra, dm) {
-        const div = document.createElement('div');
-        div.className = 'floating-text';
-        div.style.left = x + 'px';
-        div.style.top = y + 'px';
-        div.innerHTML = `<span style="color:white">${txt}</span><br><span style="color:#00f2ff">${extra}</span>${dm ? '<br><span class="dm">+1 DM</span>' : ''}`;
-        document.body.appendChild(div);
-        setTimeout(() => div.remove(), 700);
+    function showPop(x, y, g, c, crit, dm) {
+        const p = document.createElement('div');
+        p.className = 'pop';
+        p.style.left = x + 'px'; p.style.top = y + 'px';
+        p.style.color = crit ? '#ff0' : '#fff';
+        p.innerHTML = `+${Math.floor(g)}${crit ? ' CRIT!' : ''}${c > 0 ? `<br><span style="color:#00f2ff">+${c}</span>` : ''}${dm ? `<br><span class="dm">+1 DM</span>` : ''}`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 600);
     }
 
-    // Автоклик
     setInterval(() => {
-        if(state.ownedNodes.includes('auto1')) {
-            let mult = state.ownedNodes.includes('dm_auto') ? 10 : 1;
-            state.money += (state.cpBase + state.upgrades.cp * 2) * mult;
+        if(s.nodes.includes('a1')) {
+            let inc = 10 * (s.nodes.includes('dm2') ? 50 : 1);
+            s.g += inc;
             update();
         }
     }, 1000);
